@@ -121,12 +121,4 @@ docker compose up --build
 proxy, three Python backends and `wrk`. Do the real measurement yourself on a multi-core machine (ideally `wrk` and
 the backends on separate hosts) and put **your own measured numbers** on the resume. Be ready to explain how you measured.
 
-## Honest design limits (good interview material)
-
-* It is a **layer-4 (TCP) proxy**: it balances *connections*, not individual HTTP requests, and does not parse HTTP.
-  One keep-alive client connection stays on one backend. This is why `tools/bench.sh` uses `Connection: close`:
-  least-connections can only help when new connections keep arriving.
-* IPv4 only; max 64 backends (a `uint64_t` bit mask); no TLS; no config reload.
-* If *every* backend is marked down the proxy returns 503 (no "panic mode").
-* Possible upgrades: HTTP parsing for per-request balancing, `splice()` for zero-copy forwarding, weights,
-  hot reload with a mutex-protected snapshot, a Prometheus metrics endpoint.
+cs endpoint.
