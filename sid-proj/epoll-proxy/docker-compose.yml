@@ -1,0 +1,26 @@
+# Start the whole demo:   docker compose up --build
+# Then try:               curl localhost:8080
+# Kill a backend:         docker compose stop backend2     (traffic keeps flowing)
+# Bring it back:          docker compose start backend2
+services:
+  proxy:
+    build: .
+    ports:
+      - "8080:8080"
+    command: >
+      --port 8080 --algo lc --stats
+      --backend backend1:9000 --backend backend2:9000 --backend backend3:9000
+    depends_on: [backend1, backend2, backend3]
+    ulimits:
+      nofile: 1048576   # allow lots of open sockets (10k clients = 20k+ file descriptors)
+
+  backend1: &backend
+    image: python:3.12-slim
+    volumes: ["./tools/backend.py:/backend.py:ro"]
+    command: ["python", "/backend.py", "--port", "9000", "--name", "backend1"]
+  backend2:
+    <<: *backend
+    command: ["python", "/backend.py", "--port", "9000", "--name", "backend2"]
+  backend3:
+    <<: *backend
+    command: ["python", "/backend.py", "--port", "9000", "--name", "backend3"]
